@@ -11,20 +11,22 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 
-const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
-const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-const storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET;
-const messagingSenderId = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID;
-const appId = import.meta.env.VITE_FIREBASE_APP_ID;
+const ApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+const AuthDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
+const ProjectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+const StorageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET;
+const MessagingSenderId = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID;
+const AppId = import.meta.env.VITE_FIREBASE_APP_ID;
+
+
 
 const firebaseConfig = {
-  apiKey: apiKey,
-  authDomain: authDomain,
-  projectId: projectId,
-  storageBucket: storageBucket,
-  messagingSenderId: messagingSenderId,
-  appId: appId
+  apiKey: ApiKey,
+  authDomain: AuthDomain,
+  projectId: ProjectId,
+  storageBucket: StorageBucket,
+  messagingSenderId: MessagingSenderId,
+  appId: AppId
 };
 
 // Initialize Firebase
@@ -34,10 +36,3 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 // const analytics = getAnalytics(app);
-
-// VITE_FIREBASE_API_KEY=AIzaSyCWXlupV1aVszJG2YtmeIf-fnGtlQ5d2Ds
-// VITE_FIREBASE_AUTH_DOMAIN=kdu-health.firebaseapp.com
-// VITE_FIREBASE_PROJECT_ID=kdu-health
-// VITE_FIREBASE_STORAGE_BUCKET=kdu-health.firebasestorage.app
-// VITE_FIREBASE_MESSAGING_SENDER_ID=327125413129
-// VITE_FIREBASE_APP_ID=1:327125413129:web:081484da0247fbb4fd77d8

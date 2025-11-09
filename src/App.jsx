@@ -11,6 +11,7 @@ import Notifications from './pages/notifications'
 import DoctorNotifications from './pages/doctorNotifications'
 import Chat from './pages/chat'
 
+
 function App() {
   return (
     <Router>

@@ -1,77 +1,75 @@
 import React, { useEffect, useState } from 'react';
+import { doc, getDoc } from "firebase/firestore";
+import { db,auth } from "../config/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { db, auth } from "../config/firebase";
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store/UserStore';
 
+
 const initialChats = [
   {
-    id: '1',
     name: 'Dr. Achintha Dissanayaka',
     specialization: 'General Physician',
     message: 'Docter mata kema knn appiri...',
     status: 'Ongoing',
-  }
+  },
+  {
+    name: 'Dr. Achintha Dissanayaka',
+    specialization: 'General Physician',
+    message: 'Docter mata kema knn appiri...',
+    status: 'Ongoing',
+  },
+  {
+    name: 'Dr. Achintha Dissanayaka',
+    specialization: 'General Physician',
+    status: 'Done',
+  },
+  {
+    name: 'Dr. Achintha Dissanayaka',
+    specialization: 'General Physician',
+    status: 'Done',
+  },
 ];
 
 export default function Student() {
-  const [search, setSearch] = useState('');
-  const [chats, setChats] = useState(null);
-  const [uid, setUid] = useState(auth.currentUser?.uid ?? null);
-  const { user } = useUserStore();
-  const navigate = useNavigate();
+
+  const [uid, setUid] = useState(auth.currentUser?.uid);
+  const { user, setUser, clearUser } = useUserStore();
 
   useEffect(() => {
-    // redirect to login if no user
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+    const uid = auth.currentUser?.uid;
+    const fetchUserData = async () => {
 
-    // set uid from auth if not set
-    if (!uid && auth.currentUser?.uid) {
-      setUid(auth.currentUser.uid);
-    }
-
-    // only students allowed
-    if (user.role && user.role !== 'student') {
-      // you can navigate away or leave the Access Denied UI
-      return;
-    }
-
-    // fetch chats for the current student (if uid available)
-    const fetchChatsData = async (studentUid) => {
-      if (!studentUid) return;
       try {
-        const q = query(collection(db, 'Appointments'), where('st_id', '==', studentUid));
-        const snapshot = await getDocs(q);
-        const results = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            dr_name: data.dr_name ?? '',
-            title: data.title ?? '',
-            approved: data.approved ?? false,
-          };
-        });
-        setChats(results.length ? results : initialChats);
-        console.log('Fetched chats:', results);
-        // setChats(results.length ? results : initialChats);
-      } catch (err) {
-        console.error('Failed to fetch chats:', err);
-        // setChats(initialChats);
+        // 👇 Query the 'Users' collection where uid == your UID
+        const usersRef = collection(db, "Users");
+
+        const q = query(usersRef, where("uid", "==", uid));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          // Get the first matching document
+          const userDoc = querySnapshot.docs[0];
+          setUserData({ id: userDoc.id, ...userDoc.data() });
+          console.log("User Data:", { id: userDoc.id, ...userDoc.data() });
+        } else {
+          console.log("No user found with UID:", uid);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
     };
 
-    fetchChatsData(uid);
-  }, [user, uid, navigate]);
+    if (uid) fetchUserData();
+  }, [uid]);
 
-  if (!user) return null;
-  if (user.role && user.role !== 'student') return <div>Access Denied</div>;
+  const [search, setSearch] = useState('');
+  const [chats, setChats] = useState(initialChats);
+  const navigate = useNavigate();
 
-  const filteredChats = (chats || []).filter(chat =>
-    (chat.name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (chat.specialization || '').toLowerCase().includes(search.toLowerCase())
+  const filteredChats = chats.filter(chat =>
+    chat.name.toLowerCase().includes(search.toLowerCase()) ||
+    (chat.specialization && chat.specialization.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -85,11 +83,7 @@ export default function Student() {
       />
 
       <div className="flex items-center gap-3 mb-6">
-        <img
-          src={user?.photoURL || "https://randomuser.me/api/portraits/women/44.jpg"}
-          alt="profile"
-          className="rounded-full w-10 h-10"
-        />
+        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="profile" className="rounded-full w-10 h-10" />
         <div>
           <div className="font-semibold text-lg">{user?.name}</div>
           <div className="text-xs text-gray-500">{auth.currentUser?.email}</div>
@@ -98,24 +92,44 @@ export default function Student() {
 
       <div
         className="bg-red-50 border border-red-400 rounded-lg p-4 mb-6 relative cursor-pointer hover:shadow-lg transition"
-        onClick={() => navigate('/', { state: { scrollToAmbulance: true } })}
+        onClick={() => {
+          navigate('/', { state: { scrollToAmbulance: true } });
+        }}
       >
         <p>🚨 <span className="font-bold">Claiming an <span className="text-red-600">Emergency</span></span></p>
         <p className="text-sm">Immediate connection to UHKDU Werahara for urgent medical situations</p>
         <span className="absolute top-3 right-4 text-lg text-blue-500 hover:underline">↗</span>
       </div>
 
-      <div>
-        {filteredChats?.length === 0 && <div className="text-gray-500">No chats found</div>}
-        {filteredChats?.map(chat => (
-          <div key={chat.id} className="p-4 border rounded mb-3">
-            <div className="font-semibold">{chat.dr_name}</div>
-            {chat.title && <div className="text-sm text-gray-600">{chat.title}</div>}
-            {chat.message && <div className="text-sm mt-2">{chat.message}</div>}
-            <div className="text-xs mt-2 text-gray-500">{chat.approved}</div>
+      {filteredChats.map((chat, idx) => (
+        chat.status === 'Ongoing' ? (
+          <div
+            className="bg-white p-4 mb-4 rounded-lg shadow cursor-pointer hover:bg-blue-50 transition"
+            key={idx}
+            onClick={() => navigate('/chat')}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <div className="font-semibold">{chat.name}</div>
+                <div className="text-xs text-gray-500">{chat.specialization}</div>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs text-white bg-blue-500">{chat.status}</span>
+            </div>
+            <div className="text-sm text-gray-700 mt-2">{chat.message}</div>
           </div>
-        ))}
-      </div>
+        ) : (
+          <div className="bg-white p-4 mb-4 rounded-lg shadow" key={idx}>
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <div className="font-semibold">{chat.name}</div>
+                <div className="text-xs text-gray-500">{chat.specialization}</div>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs text-white bg-orange-400">{chat.status}</span>
+            </div>
+            <button className="mt-3 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md font-semibold">Request New Appointment</button>
+          </div>
+        )
+      ))}
     </div>
   );
 }

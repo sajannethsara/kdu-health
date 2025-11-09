@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserStore } from '../store/UserStore';
 
 const doctor = {
   name: 'Dr. Achintha Dissanayaka',
@@ -35,23 +34,8 @@ const appointments = [
 export default function DoctorDashboard() {
   const ongoing = appointments.filter(a => a.status === 'Ongoing');
   const pending = appointments.filter(a => a.status === 'Pending');
-
-  const { user } = useUserStore();
-  const doctor = {
-  name: user?.name || 'Dr. Name',
-  specialization: user?.specialization || 'General Physician',
-  avatar: user?.avatar || 'https://randomuser.me/api/portraits/men/44.jpg',
-};
   const navigate = useNavigate();
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
-  if(user.role !== 'doctor'){
-    return <div>Access Denied</div>;
-  }
-  
   return (
     <div className="max-w-xl mx-auto p-4">
       {/* Doctor Info Header */}
