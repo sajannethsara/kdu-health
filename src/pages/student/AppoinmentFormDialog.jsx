@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { ChevronDownIcon } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../config/firebase';
+import { se } from 'date-fns/locale';
 
 export default function AppoinmentFormDialog({ studentId, studentName, doctorId, doctorName }) {
   const [title, setTitle] = useState('');
@@ -32,9 +33,23 @@ export default function AppoinmentFormDialog({ studentId, studentName, doctorId,
         st_name: studentName,
         dr_id: doctorId,
         dr_name: doctorName,
-      };
+    };
+    await addDoc(collection(db, 'Appointments'), newAppointment);
 
-      await addDoc(collection(db, 'Appointments'), newAppointment);
+    const newNotification = {
+      doctorId: doctorId,
+      message: `Student ${studentName} has requested an appointment.`,
+      read: false,
+      studentAvatar: "", // You can add avatar URL if available
+      studentId: studentId,
+      studentName: studentName,
+      tag: "#ent-specialist", // Adjust or make dynamic if needed
+      timestamp: serverTimestamp(),
+      type: "doctor-notify",
+    };
+
+    await addDoc(collection(db, 'notifications'), newNotification);
+
     //   alert('Appointment created successfully!');
       setTitle('');
       setDescription('');
