@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Map from '../components/Map';
+import Map from '../../components/Map';
 
 const Emergency = ({ userRole }) => {
   // Only amb_assistant can see contact requests
